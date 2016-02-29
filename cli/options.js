@@ -13,6 +13,7 @@ function options(args) {
       'nocompress',
       'nosvg',
       'videos',
+      'iframes',
       'inlinemin',
     ],
     string: [ // options
@@ -29,6 +30,7 @@ function options(args) {
       e: 'encoding',
       s: 'nosvg',
       o: 'videos',
+      f: 'iframes',
       m: 'inlinemin',
       H: 'header',
     },
