@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 var readFileSync = require('fs').readFileSync;
+var writeFileSync = require('fs').writeFileSync;
 var Promise = require('es6-promise').Promise; // jshint ignore:line
 
 main();
@@ -13,13 +14,12 @@ function main() {
   }
 
   var url = argv._.shift();
-
   if (argv.version) {
     console.log(require('../package.json').version || 'development');
     process.exit(0);
   }
 
-  if ((!url && !argv.useStdin) || argv.help) {
+  if ((!url && !argv.useStdin && !argv.infile) || argv.help) {
     var usage = readFileSync(
       __dirname + '/../docs/usage.txt', 'utf8'
     );
@@ -30,26 +30,30 @@ function main() {
   var Inliner = require('../');
 
   var p = Promise.resolve(url);
+    if (argv.infile) {
+	p=Promise.resolve(argv.infile);
+    } else {
+	if (argv.useStdin) {
+	    p = new Promise(function (resolve) {
+		process.stdin.resume();
+		process.stdin.setEncoding('utf8');
+		
+		var data = '';
+		
+		process.stdin.on('data', function (chunk) {
+		    data += chunk;
+		});
+		
+		process.stdin.on('end', function () {
+		    resolve(data);
+		});
+	    });
+	}
+    }
 
-  if (argv.useStdin) {
-    p = new Promise(function (resolve) {
-      process.stdin.resume();
-      process.stdin.setEncoding('utf8');
-
-      var data = '';
-
-      process.stdin.on('data', function (chunk) {
-        data += chunk;
-      });
-
-      process.stdin.on('end', function () {
-        resolve(data);
-      });
-    });
-  }
-
-  p.then(function (source) {
-    var inliner = new Inliner(source, argv, function result(error, html) {
+    p.then(function (source) {
+	
+	var inliner = new Inliner(source, argv, function result(error, html) {
       if (error) {
         var message = Inliner.errors[error.code] || error.message;
         console.error(message);
@@ -61,9 +65,13 @@ function main() {
         process.exit(1);
       }
 
-      console.log(html);
-    });
-
+	if (argv.outfile) {
+	    // dump to outfile
+	    writeFileSync(argv.outfile,html,"utf8")
+	} else {
+	    console.log(html);
+	}
+	});
     return inliner;
   }).then(function (inliner) {
     // checks for available update and returns an instance

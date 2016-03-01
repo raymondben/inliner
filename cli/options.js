@@ -18,6 +18,8 @@ function options(args) {
     ],
     string: [ // options
       'encoding',
+      'outfile',
+      'infile' // because of tty behaviour I don't understand
     ],
     alias: {
       images: 'noimages', // legacy support

@@ -16,6 +16,8 @@
     -V, --version       output the version number
     -h, --help          output usage information
     -m, --inlinemin     inline minified files
+    --infile=filename   specify input file
+    --outfile=filename  specify output file
 
   Options:
 
